@@ -20,9 +20,9 @@ SB-OOB-100seed/
 ├── run_scavenger.slurm              SLURM array job (scavenger partition, with --requeue + idempotency)
 ├── aggregate_100seeds.R             cross-seed aggregation -> tables/
 └── tables/                          paper-ready aggregated outputs
-    ├── all_seeds_flat.csv           flat long table (6,200 rows)
-    ├── agg_100seeds.csv             cross-seed paired statistics (57 cells × 18 stats)
-    ├── summary_by_exp.csv           per-EXP overview
+    ├── agg_100seeds.csv             cross-seed paired statistics (62 cells × 18 stats)
+    ├── sig_mean_cells.csv           6 cells with cross-seed Wilcoxon p<0.05 (Section 5.6)
+    ├── sig_var_cells.csv            7 cells with Pitman–Morgan p<0.05
     ├── table_exp1_100seeds.csv
     ├── table_exp2_100seeds.csv
     ├── table_exp3_100seeds.csv
@@ -33,14 +33,16 @@ SB-OOB-100seed/
 The **raw per-seed RData outputs** (500 summary files + 500 raw-paired files, ~XX MB compressed) are too large for the main repository. They are attached to the **GitHub Release**:
 
 - Release: **[v1.0-data](https://github.com/Cheng-Peng0718/SB-OOB-100seed/releases/tag/v1.0-data)**
-  - `results_100seeds.tar.gz` — all 100 `results/seed_NNN/` directories
-  - `logs_100seeds.tar.gz` — all SLURM stdout/stderr logs
+  - `results_100seeds.zip` — all 100 `results/seed_NNN/` directories
+  - `logs_100seeds.zip` — all SLURM stdout/stderr logs
 
 Download and extract:
 
 ```bash
-wget https://github.com/Cheng-Peng0718/SB-OOB-100seed/releases/download/v1.0-data/results_100seeds.tar.gz
-tar -xzf results_100seeds.tar.gz
+# Mac/Linux:
+unzip results_100seeds.zip
+
+# Windows: right-click the downloaded .zip -> "Extract All..."
 ```
 
 ---
@@ -49,7 +51,7 @@ tar -xzf results_100seeds.tar.gz
 
 ### Option A: re-aggregate from pre-existing RData (fast, ~1 minute)
 
-If you have `results/seed_001/ ... seed_100/` (either by downloading the release tarball above, or by re-running the simulation, see Option B):
+If you have `results/seed_001/ ... seed_100/` (either by downloading the release archive above, or by re-running the simulation, see Option B):
 
 ```bash
 Rscript --vanilla aggregate_100seeds.R
@@ -79,10 +81,12 @@ Both SLURM scripts write to `results/seed_NNN/` and are idempotent — already-c
 
 | File | Rows | What it contains |
 |---|---:|---|
-| `all_seeds_flat.csv` | 6,200 | One row per (seed, experiment, dataset, metric). Within-seed paired statistics computed across 50 internal replications. |
-| `agg_100seeds.csv` | 62 | One row per (experiment, dataset, metric). Cross-seed paired statistics (Wilcoxon, paired-t, sign test, Pitman–Morgan, Cohen's d_z, sd-ratio, 95 % CI). **This is the master table for paper Section 5.** |
-| `table_exp{1..5}_100seeds.csv` | 5–18 each | The same table partitioned by experiment family, exactly as used in Tables 2–7 of the paper. |
-| `summary_by_exp.csv` | 5 | Per-EXP counts of significant cells (mean-level and variance-level), broken down by sign. Corresponds to Table 8 of the paper. |
+| `agg_100seeds.csv` | 62 | Master table. One row per (experiment, dataset, metric); columns include cross-seed mean diff, paired Wilcoxon and t-test p-values, Cohen's d_z, 95 % CI, sign test, Pitman–Morgan paired variance test, and sd-ratio. **This is the master table for paper Section 5.** |
+| `sig_mean_cells.csv` | 6 | Cells where the cross-seed Wilcoxon test rejects at p<0.05. Discussed in Section 5.6 of the paper. |
+| `sig_var_cells.csv` | 7 | Cells where the Pitman–Morgan paired variance test rejects at p<0.05. Includes the vehicle E1_B / E2_B finding (Section 5.1). |
+| `table_exp{1..5}_100seeds.csv` | 5–18 each | Per-experiment partition of `agg_100seeds.csv`, matching the structure of Tables 2–7 in the paper. |
+
+The full long-format raw table (`all_seeds_flat.csv`, 6,200 rows) and a per-EXP summary (`summary_by_exp.csv`) are produced on demand by running `aggregate_100seeds.R` (requires the `results/seed_NNN/` directories from the Release archive).
 
 ---
 
