@@ -21,6 +21,8 @@ SB-OOB-100seed/
 ├── aggregate_100seeds.R             cross-seed aggregation -> tables/
 └── tables/                          paper-ready aggregated outputs
     ├── agg_100seeds.csv             cross-seed paired statistics (62 cells × 18 stats)
+    ├── all_seeds_flat.csv           flat long table (6,200 rows: seed × exp × dataset × metric)
+    ├── summary_by_exp.csv           per-EXP overview (matches paper Table 8)
     ├── sig_mean_cells.csv           6 cells with cross-seed Wilcoxon p<0.05 (Section 5.6)
     ├── sig_var_cells.csv            7 cells with Pitman–Morgan p<0.05
     ├── table_exp1_100seeds.csv
@@ -82,11 +84,11 @@ Both SLURM scripts write to `results/seed_NNN/` and are idempotent — already-c
 | File | Rows | What it contains |
 |---|---:|---|
 | `agg_100seeds.csv` | 62 | Master table. One row per (experiment, dataset, metric); columns include cross-seed mean diff, paired Wilcoxon and t-test p-values, Cohen's d_z, 95 % CI, sign test, Pitman–Morgan paired variance test, and sd-ratio. **This is the master table for paper Section 5.** |
+| `all_seeds_flat.csv` | 6,200 | One row per (seed, experiment, dataset, metric). Within-seed paired statistics computed across 50 internal replications. Useful for ad-hoc per-seed analyses. |
+| `summary_by_exp.csv` | 5 | Per-EXP counts of significant cells (mean-level and variance-level), broken down by sign. Corresponds to Table 8 of the paper. |
 | `sig_mean_cells.csv` | 6 | Cells where the cross-seed Wilcoxon test rejects at p<0.05. Discussed in Section 5.6 of the paper. |
 | `sig_var_cells.csv` | 7 | Cells where the Pitman–Morgan paired variance test rejects at p<0.05. Includes the vehicle E1_B / E2_B finding (Section 5.1). |
 | `table_exp{1..5}_100seeds.csv` | 5–18 each | Per-experiment partition of `agg_100seeds.csv`, matching the structure of Tables 2–7 in the paper. |
-
-The full long-format raw table (`all_seeds_flat.csv`, 6,200 rows) and a per-EXP summary (`summary_by_exp.csv`) are produced on demand by running `aggregate_100seeds.R` (requires the `results/seed_NNN/` directories from the Release archive).
 
 ---
 
